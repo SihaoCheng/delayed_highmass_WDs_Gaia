@@ -37,14 +37,14 @@ n = 400; n_tc = 4000
 t0 = np.linspace(0,end_of_SF,n)
 
 ##--------------------------------------------------------------------------------------------------
-def select_WD(WD_table, bprp_excess=1.3, bprp_error=0.05, ev=2, G=19.5, d_ed=10, distance=500):
+def select_WD(WD_table, bprp_excess=1.3, bprp_error=0.05, ev=2, G=19.5, d_ed=10, distance=500,astrometric_excess=1.5):
     selected = (WD_table['phot_bp_rp_excess_factor']<bprp_excess)*\
         (WD_table['parallax']/WD_table['parallax_error']>d_ed)*\
         ((np.sqrt((WD_table['phot_bp_mean_flux_error']/WD_table['phot_bp_mean_flux'])**2+\
         (WD_table['phot_rp_mean_flux_error']/WD_table['phot_rp_mean_flux'])**2)\
                   <bprp_error ))*\
            (WD_table['phot_g_mean_mag']<G) * (WD_table['ev']<ev) * (1/WD_table['parallax']*1000<distance)\
-            *(WD_table['astrometric_excess_noise']<1.5)
+            *(WD_table['astrometric_excess_noise']<astrometric_excess)
     selected_table = WD_table[selected].copy()
     for spec_type, model in [['DA_thick','CO'],['DA_thick','ONe'],['DB','CO'],['DB','ONe'],['DA_thin','CO'],['DA_thin','ONe']]:
         age_planet, mass_planet = para_of_WD(selected_table, spec_type, model) 
