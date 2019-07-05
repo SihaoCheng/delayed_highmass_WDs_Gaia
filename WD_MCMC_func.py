@@ -10,15 +10,15 @@ from multiprocessing import Pool
 from astropy.coordinates import SkyCoord  # High-level coordinates
 from astropy.coordinates import ICRS, Galactic # Low-level frames
 import astropy.units as u
-import WD_HR
-import WD_models
-#from WD_MCMC_func import *
+import WD_HR # a function package 
+import WD_models # a module w
+
 
 test_number = '0'
 t_gap_eff = 0.743
-Q_IS_MERGER= True
-DELAY_INDEX = 0.7
-DELAY_CUT = 0.5
+Q_IS_MERGER= True # Does the extra-delayed population also have the WD-WD merger delay?
+DELAY_INDEX = 0.7 # the absolute value of the power index of the delay time distribution for mergers. 
+DELAY_CUT = 0.5 # 
 
 # Set parameters
 ##------------------------------------------------------------------------------------------------------------------------
