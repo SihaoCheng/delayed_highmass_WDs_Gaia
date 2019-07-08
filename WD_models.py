@@ -1,3 +1,12 @@
+'''
+This package will read different cooling models and interpolate the conversion functions
+between HR diagram, Teff, Mbol, etc. The functions are stored in dictionaries for each model.
+See the main function and the lines after its definition.
+
+This package also contains the functions to read a single cooling track.
+'''
+
+
 import numpy as np
 import matplotlib.pyplot as plt
 from astropy.io import ascii, votable
@@ -7,8 +16,6 @@ from astropy.io import fits
 from scipy.interpolate import interp1d, interp2d, CloughTocher2DInterpolator, griddata, LinearNDInterpolator
 from scipy.signal import fftconvolve
 
-#def IFMR(mass_WD):
-#    return (mass_WD-0.5)/0.75*7+1
 IFMR_new = interp1d((0.50, 0.60, 0.8, 0.95, 1.38),(0.8,2.75,3.75,6,10),\
                           fill_value = 0, bounds_error=False) # mass_WD, mass_ini
 IFMR_new = interp1d((0.50, 0.55, 0.65,0.75, 0.85, 1.0, 1.25,1.35),(0.95,1,2,3,3.5,5,8,9),\
@@ -35,6 +42,9 @@ def interpolate_2d(x,y,para,method):
 
 
 def plot_lowmass_atm(spec_type='DB',color='G'):
+    '''
+    This function plots the tracks on logg vs. Teff diagram color coded by G or BP-RP.
+    '''
     for mass in ['0.3','0.4','0.5','0.6','0.7','0.8','0.9','1.0','1.2']:
     #for mass in ['0.4']:
         Cool = Table.read('models/Fontaine_Gaia_atm_grid/Table_Mass_'+mass+'_'+spec_type,format='ascii')
@@ -60,6 +70,12 @@ def plot_lowmass_atm(spec_type='DB',color='G'):
 
 
 def interp_atm(spec_type='DB',color='G',xy=(4000,40000,100,7.0,9.5,0.01)):
+    '''
+    This function generates from the atmosphere model the function (logTeff, logg) --> G, BP-RP, or G-Mbol 
+    
+    arguments:
+    color: the target variable of the interpolation function. 'G', 'BP-RP', or 'G-Mbol'.
+    '''
     logTeff = np.zeros(0)
     logg = np.zeros(0)
     age = np.zeros(0)
@@ -104,6 +120,10 @@ def interp_atm(spec_type='DB',color='G',xy=(4000,40000,100,7.0,9.5,0.01)):
     
     
 def interp_compare(spec_type = 'DA',color = 'bp_rp',pl=False):
+    '''
+    plot the cooling tracks and the results of atmosphere interpolation on the
+    logg vs. Teff diagram color coded by G or BP-RP
+    '''
     interp_result, interp_func = interp_atm(spec_type=spec_type,color=color,\
                                             xy=(tmin,tmax,dt,loggmin,loggmax,dlogg))
     if pl==True:
@@ -123,6 +143,10 @@ def interp_compare(spec_type = 'DA',color = 'bp_rp',pl=False):
 
 
 def HR_to_para(para,xy,bp_rp_fontaine,G_fontaine,age,pl=False,title=' '):
+    '''
+    Interpolate the function of (BR-RP, G) --> para.
+    (the argument 'age' is useless.)
+    '''
     grid_x, grid_y = np.mgrid[xy[0]:xy[1]:xy[2], xy[3]:xy[4]:xy[5]]
     grid_x *= interp_bprp_factor
     selected = ~np.isnan(bp_rp_fontaine+G_fontaine+age+para)*(G_fontaine<16)*(G_fontaine>8)
@@ -151,6 +175,13 @@ def HR_to_para(para,xy,bp_rp_fontaine,G_fontaine,age,pl=False,title=' '):
 
 
 def interp_xy_z(para,xy,x,y,xfactor=1,pl=False,title=''):
+    '''
+    Interpolate the function (x,y) --> z from a series of x, y, and z values. 
+    Similar to HR_to_para, but the x and y can be any variable.
+    
+    arguments:
+    xy: the grid information. e.g. xy=(4000,40000,100,7.0,9.5,0.01). see np.mgrid for more information.
+    '''
     grid_x, grid_y = np.mgrid[xy[0]:xy[1]:xy[2], xy[3]:xy[4]:xy[5]]
     grid_x *= xfactor
     selected = ~np.isnan(x+y+para)
@@ -178,6 +209,9 @@ def interp_xy_z(para,xy,x,y,xfactor=1,pl=False,title=''):
 
 
 def m_logage_to_HR(mass,logage,bp_rp_fontaine,G_fontaine):
+    '''
+    get the interpolated function (mass, logage) --> (BP_RP, G)
+    '''
     selected = ~np.isnan(bp_rp_fontaine+G_fontaine+logage)*(G_fontaine<16)*(G_fontaine>8)
     grid_bprp_func = interpolate_2d( mass[selected], logage[selected], \
                                     bp_rp_fontaine[selected], interp_type)
@@ -187,6 +221,10 @@ def m_logage_to_HR(mass,logage,bp_rp_fontaine,G_fontaine):
 
 
 def open_evolution_tracks(model, spec_type, IFMR, logg_func=None):
+    '''
+    read the cooling models and store the following information of different cooling tracks together in one numpy array:
+    mass, logg, age, age_for_density, logteff, Mbol
+    '''
     logg = np.zeros(0); age = np.zeros(0); age_for_density = np.zeros(0)
     logteff = np.zeros(0); mass_array = np.zeros(0); Mbol = np.zeros(0)
     CO = ['040','050','060','070','080','090','095','100','105','110','115','120','125','130']
@@ -329,6 +367,9 @@ def open_evolution_tracks(model, spec_type, IFMR, logg_func=None):
 
 
 def plot_G_bprp_density(G, bp_rp, density, mass_array,age):
+    '''
+    plot the number-density on the HR diagram predicted by the cooling model, assuming constant star formation rate.
+    '''
     plt.figure(figsize=(18,5))
     plt.subplot(1,3,1)
     plt.scatter(bp_rp_fontaine,G_fontaine,c=mass_array,s=1)
@@ -346,6 +387,9 @@ def plot_G_bprp_density(G, bp_rp, density, mass_array,age):
 
 def plot_contour_age_mass(grid_logage,grid_mass,x_shift=0,y_shift=0,age_levels=[1,2,3,4,5,6,7,8,9],age_labels=[5],\
                           mass_levels=[0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3],mass_labels=[0.8]):
+    '''
+    plot the contour of WD age and mass on the HR diagram.
+    '''
     CS = plt.contour(10**grid_logage.T/10**9,levels=age_levels,linestyles='dashed',cmap='jet',\
                 extent=(xy[0]+x_shift,xy[1]+x_shift,xy[3]+y_shift,xy[4]+y_shift),\
                 origin='lower',aspect='auto')
@@ -477,6 +521,8 @@ def main(spec_type, model,IFMR, logg_func=None):
                    distance_range=distance_range)
         plt.title(spec+' '+model)
         plt.show()
+    
+    # Return a dictionary containing all the cooling track data points, interpolation functions and interpolation grids 
     return {'grid_G_Mbol':grid_G_Mbol, 'grid_G_Mbol_func':grid_G_Mbol_func,\
             'grid_bp_rp':grid_bp_rp, 'grid_bp_rp_func':grid_bp_rp_func,\
             'mass_array':mass_array, 'logg':logg, 'age':age, 'age_for_density':age_for_density,\
@@ -504,7 +550,7 @@ interp_type = 'linear'
 interp_type_atm = 'linear'
 interp_bprp_factor = 5
 
-    
+# Fontaine et al. 2001 (CO), Camisassa et al. 2019 (ONe), PG, and Lauffer et al. 2019 (MESA) models
 DA_thick_CO = main('DA_thick','CO',IFMR_new)
 DA_thin_CO = main('DA_thin','CO',IFMR_new)
 DB_CO= main('DB','CO',IFMR_new)
@@ -515,7 +561,7 @@ DB_PGONe = main('DB','PG+ONe',IFMR_new)
 DA_thin_MESA = main('DA_thin','CO+MESA',IFMR_new)
 DB_MESA = main('DB','CO+MESA',IFMR_new)
 
-# for BaSTI logg_func
+# get BaSTI logg_func
 _, logg_func_DA_thick_CO = interp_xy_z(DA_thick_CO['logg'], [2.8,5.2,0.02,0.38,1.35,0.01], DA_thick_CO['logteff'],
                                  DA_thick_CO['mass_array'],)
 _, logg_func_DA_thin_CO = interp_xy_z(DA_thin_CO['logg'], [2.8,5.2,0.02,0.38,1.35,0.01], DA_thin_CO['logteff'],
@@ -523,6 +569,7 @@ _, logg_func_DA_thin_CO = interp_xy_z(DA_thin_CO['logg'], [2.8,5.2,0.02,0.38,1.3
 _, logg_func_DB_CO = interp_xy_z(DB_CO['logg'], [2.8,5.2,0.02,0.38,1.35,0.01], DB_CO['logteff'],
                                  DB_CO['mass_array'],)
 
+# Salaris et al. 2010 (Phase_Sep) BaSTI models. 4 and 2 are alpha-enhanced models.
 DA_thick_Phase_Sep = main('DA_thick','Phase_Sep',IFMR_new, logg_func_DA_thick_CO)
 DB_Phase_Sep = main('DB','Phase_Sep',IFMR_new, logg_func_DB_CO)
 
