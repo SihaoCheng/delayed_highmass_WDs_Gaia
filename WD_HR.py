@@ -8,11 +8,7 @@ import astropy.units as u
 import WD_models
 
 
-def get_v_and_ev(table):
-    U0 = 10
-    V0 = 7.5
-    W0 = 6.5
-    v_drift  = 0
+def get_v_and_ev(table, U0=10, V0=7.5, W0=6.5, v_drift=0):
     c = SkyCoord(ra=table['ra']*u.deg, dec=table['dec']*u.deg, \
              pm_ra_cosdec=table['pmra']*u.mas/u.yr, pm_dec=table['pmdec']*u.mas/u.yr)
     pml = c.transform_to(Galactic).pm_l_cosb.value
@@ -24,9 +20,9 @@ def get_v_and_ev(table):
                     ((V0+v_drift)*np.sin(table['l']/180*np.pi)+U0*np.cos(table['l']/180*np.pi))*np.sin(table['b']/180*np.pi)
     v = ( vL**2 + vB**2 )**0.5
     ev = (table['pmra_error']**2 + table['pmdec_error']**2)**0.5*factor
-    U = -pml*factor * np.sin(table['l']/180*np.pi)+11
-    V = pml*factor * np.cos(table['l']/180*np.pi)+4
-    W = pmb*factor * np.cos(table['b']/180*np.pi)+7.6
+    U = -pml*factor * np.sin(table['l']/180*np.pi)+U0
+    V = pml*factor * np.cos(table['l']/180*np.pi)+V0
+    W = pmb*factor * np.cos(table['b']/180*np.pi)+W0
     return v, ev, U, V, W
 
 
