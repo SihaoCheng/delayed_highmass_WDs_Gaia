@@ -11,11 +11,11 @@ from astropy.coordinates import SkyCoord  # High-level coordinates
 from astropy.coordinates import ICRS, Galactic # Low-level frames
 import astropy.units as u
 import WD_HR # a function package 
-import WD_models # a module w
+import WD_models # a module to get the conversion between WD photometry and physical parameters according to WD models
 
 
 test_number = '0'
-t_gap_eff = 0.743
+t_gap_eff = 0.743 # the effective width of the Q branch in terms of photometric age
 Q_IS_MERGER= True # Does the extra-delayed population also have the WD-WD merger delay?
 DELAY_INDEX = 0.7 # the absolute value of the power index of the delay time distribution for mergers. 
 DELAY_CUT = 0.5 # 
@@ -26,12 +26,13 @@ Nv = 13
 NQ = 7
 delay_lim = 15
 
-# Define star formation functions
+# Define star formation parametrization
 ##------------------------------------------------------------------------------------------------------------------------
 # t0: age from born, t1: merger from born, tc: cooling age
 # t0 = t1 + tc
 end_of_SF = 11
-age_T = 7
+age_T = 7 # the starting age of thin-thick transition
+age_trans = 10 # the ending age of thin-thick transition
 stromberg_k = 80
 n = 400; n_tc = 4000
 t0 = np.linspace(0,end_of_SF,n)
@@ -150,7 +151,6 @@ def LBR_XYZ(l,b,L,B,sx,sy,sz):
             1/Sigma_lb[1,1]**0.5/(2*np.pi)**0.5 * np.exp(-B**2/2/Sigma_lb[1,1])
 
 def velocity_scatter_3D(age, index, v4, vT, v0):
-    age_trans = 10
     return (age<age_T)*((age / 4)**index*v4+v0) + \
             (age>=age_T)*(age<age_trans)*(vT - (age-age_trans)/(age_T-age_trans)*(vT-((age_T / 4)**index*v4+v0))) +\
             (age>=age_trans)*vT
