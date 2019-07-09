@@ -6,5 +6,5 @@ This repository also contains data tables with information of the white dwarfs w
 
 This repository is in construction and will be finished soon. If you want more information or have suggestions, please do not hesitate to contact me: s.cheng@jhu.edu
 
-Below is a demonstration of our two-population scenario of the Q branch. More animations illustrating the abnormal white dwarf cooling are in ./gif_animation/ and on my webpage https://pages.jh.edu/~scheng40/.
+Below is a demonstration of our two-population scenario of the Q branch. The first population of white dwarfs cools normally, and the second population has an extra cooling delay on the Q branch. More animations illustrating this abnormal white-dwarf cooling are in "./gif_animation/" and on my webpage https://pages.jh.edu/~scheng40/.
 ![the two-population scenario of the Q branch](/gif_animation/gif_green.gif) ![the two-population scenario of the Q branch](/gif_animation/gif_orange.gif)
