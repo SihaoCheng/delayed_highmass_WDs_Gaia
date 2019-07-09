@@ -5,3 +5,5 @@ This repository contains python files for functions and the MCMC code, and jupyt
 This repository also contains data tables with information of the white dwarfs we analysed in the paper. 
 
 This repository is in construction and will be finished soon. If you want more information or have suggestions, please do not hesitate to contact me: s.cheng@jhu.edu
+
+![the two-population scenario of the Q branch](/gif_animation/gif_green.gif) ![the two-population scenario of the Q branch](/gif_animation/gif_orange.gif)
