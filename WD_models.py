@@ -2,7 +2,6 @@
 This package will read different cooling models and interpolate the conversion functions
 between HR diagram, Teff, Mbol, etc. The functions are stored in dictionaries for each model.
 See the main function and the lines after its definition.
-
 This package also contains the functions to read a single cooling track.
 '''
 
@@ -83,7 +82,7 @@ def interp_atm(spec_type='DB',color='G',xy=(4000,40000,100,7.0,9.5,0.01)):
     G = np.zeros(0)
     bp_rp = np.zeros(0)
     Mbol = np.zeros(0)
-    for mass in ['0.3','0.4','0.5','0.6','0.7','0.8','0.9','1.0','1.2']:
+    for mass in ['0.2','0.3','0.4','0.5','0.6','0.7','0.8','0.9','1.0','1.2']:
         Cool = Table.read('models/Fontaine_Gaia_atm_grid/Table_Mass_'+mass+'_'+spec_type,format='ascii')
         # every mass
         selected = Cool['Teff']>3500
@@ -227,9 +226,9 @@ def open_evolution_tracks(model, spec_type, IFMR, logg_func=None):
     '''
     logg = np.zeros(0); age = np.zeros(0); age_for_density = np.zeros(0)
     logteff = np.zeros(0); mass_array = np.zeros(0); Mbol = np.zeros(0)
-    CO = ['040','050','060','070','080','090','095','100','105','110','115','120','125','130']
-    ONe = ['040','050','060','070','080','090','095','100','105']
-    MESA = ['040','050','060','070','080','090','095']
+    CO = ['020','030','040','050','060','070','080','090','095','100','105','110','115','120','125','130']
+    ONe = ['020','030','040','050','060','070','080','090','095','100','105']
+    MESA = ['020','030','040','050','060','070','080','090','095']
     Phase_Sep = ['054','055','061','068','077','087','100','110','120']
     if model=='CO':
         mass_list=CO
@@ -352,7 +351,7 @@ def open_evolution_tracks(model, spec_type, IFMR, logg_func=None):
                      '1.1466','1.151','1.2163','1.22','1.2671','1.3075']
         for mass in mesa_masslist:
             Cool = Table.read('models/MESA_model/'+spec_suffix3+'_atm-M'+mass+'.dat',format='csv',header_start=1,data_start=2) 
-            Cool = Cool[(Cool['# log Teff [K]']>tmin)*(Cool['# log Teff [K]']<tmax)][::100]
+            Cool = Cool[(Cool['# log Teff [K]']>tmin)*(Cool['# log Teff [K]']<tmax)][::1]
             #Cool.sort('Log(edad/Myr)')
             mass_array = np.concatenate((mass_array,Cool['mass [Msun]']))
             logg = np.concatenate(( logg,np.array(Cool['log g [cm/s^2]']) ))
@@ -558,7 +557,7 @@ DA_thick_ONe = main('DA_thick','CO+ONe',IFMR_new)
 DA_thin_ONe = main('DA_thin','CO+ONe',IFMR_new)
 DB_ONe = main('DB','CO+ONe',IFMR_new)
 DB_PGONe = main('DB','PG+ONe',IFMR_new)
-DA_thin_MESA = main('DA_thin','CO+MESA',IFMR_new)
+DA_thick_MESA = main('DA_thick','CO+MESA',IFMR_new)
 DB_MESA = main('DB','CO+MESA',IFMR_new)
 
 # get BaSTI logg_func
@@ -614,7 +613,7 @@ def open_a_track(spec_type,model,mass,IFMR,logg_func=None):
         spec_suffix = '0204'; spec_suffix2 = 'DA'; spec_suffix3 = 'H'
         
     if model=='CO':  
-        CO_masslist = ['040','050','060','070','080','090','095','100','105','110','115','120','125','130']
+        CO_masslist = ['020','030','040','050','060','070','080','090','095','100','105','110','115','120','125','130']
         mass_diff = 1000; mass_temp=''
         for mass_CO in CO_masslist:
             if abs(float(mass)-float(mass_CO)) < mass_diff:
