@@ -565,7 +565,7 @@ def ln_prob(para,
          within(para_v[10], -5, 20) * within(para_v[11], -5, 20) * within(para_v[12], -5, 20) *
          within(para_Q[0], 0, 0.35) * within(para_Q[1], 0, delay_lim) * within(para_Q[2], 0, 0.05) *
          within(para_Q[3], -2, -0.1) * within(para_Q[4], 70, 90) * within(para_Q[5], 0, 0.5) *
-         within(para_Q[6], -5, 20):
+         within(para_Q[6], -5, 20)):
         return -np.inf
     else:
         density, _, _, _ = ln_likelihood_pheno(
@@ -734,7 +734,7 @@ def ln_prob_merger_rate(para,
          within(para_v[10], -5, 20) * within(para_v[11], -5, 20) * within(para_v[12], -5, 20) *
          within(para_Q[0], 0, 0.35) * within(para_Q[1], 0, delay_lim) * within(para_Q[2], 0, 0.05) *
          within(para_Q[3], -2, -0.1) * within(para_Q[4], 70, 90) * within(para_Q[5], 0, 0.8) *
-         within(para_Q[6], -5, 20):
+         within(para_Q[6], -5, 20)):
         return -np.inf
     else:
         density, _ = ln_likelihood_pheno_merger_rate(
