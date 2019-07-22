@@ -1,49 +1,46 @@
-import numpy as np
-import matplotlib.pyplot as plt
-from astropy.io import ascii, votable
-from astropy.table import Table, vstack, hstack
-import os, sys
-from scipy.interpolate import interp1d
-import importlib
+import sys
+
 import emcee
+import matplotlib.pyplot as plt
 from multiprocessing import Pool
+import numpy as np
+
 from astropy.coordinates import SkyCoord  # High-level coordinates
 from astropy.coordinates import ICRS, Galactic # Low-level frames
+from astropy.io import ascii
+from astropy.table import Table
 import astropy.units as u
+
 import WD_HR
-import WD_models
 import WD_MCMC_func
+import WD_models
 
 
 test_number = sys.argv[2]
 WD_MCMC_func.test_number = test_number
 
-if sys.argv[3]=='M':
+if sys.argv[3] == 'M':
     METHOD = 'Run_MCMC'
     WD_MCMC_func.t_gap_eff = 0.743
-if sys.argv[3]=='S':
+if sys.argv[3] == 'S':
     METHOD = 'Simulate'
     WD_MCMC_func.t_gap_eff = 0.505
-
-if sys.argv[4]=='T':
+if sys.argv[4] == 'T':
     NOT_FIT_UVW= True
-if sys.argv[4]=='F':
+if sys.argv[4] == 'F':
     NOT_FIT_UVW = False
-
-if sys.argv[5]=='T':
-    NOT_FIT_INDEX= True
-if sys.argv[5]=='F':
+if sys.argv[5] == 'T':
+    NOT_FIT_INDEX = True
+if sys.argv[5] == 'F':
     NOT_FIT_INDEX = False
-
-if sys.argv[6]=='T':
-    FIXV= True
-if sys.argv[6]=='F':
+if sys.argv[6] == 'T':
+    FIXV = True
+if sys.argv[6] == 'F':
     FIXV = False
-    
-if sys.argv[7]=='T':
-    WD_MCMC_func.Q_IS_MERGER= True
-if sys.argv[7]=='F':
-    WD_MCMC_func.Q_IS_MERGER= False
+if sys.argv[7] == 'T':
+    WD_MCMC_func.Q_IS_MERGER = True
+if sys.argv[7] == 'F':
+    WD_MCMC_func.Q_IS_MERGER = False
     
 WD_MCMC_func.DELAY_INDEX = -float(sys.argv[8])    
 WD_MCMC_func.DELAY_CUT = float(sys.argv[9])
@@ -52,50 +49,54 @@ if len(sys.argv)>10:
     DELAY = int(sys.argv[10])
 
 ##--------------------------------------------------------------------------------------------------
-agents = 30
-chunksize = 1
-number = agents
-
 from WD_MCMC_func import Nv, NQ, end_of_SF, age_T, DELAY_INDEX, DELAY_CUT, Q_IS_MERGER, stromberg_k
-burning = 200
-then_run = 400
-gap = 5
-ndim, nwalkers = Nv+NQ, 50
+
+agents      = 30
+chunksize   = 1
+number      = agents
+burning     = 200
+then_run    = 400
+gap         = 5
+ndim, nwalkers = Nv + NQ, 50
 
 
 # Load WD table
 ##------------------------------------------------------------------------------------------------------------------------
 #WD_warwick_smaller = np.load('/datascope/menard/group/scheng/Gaia/WD_warwick_smaller.npy')[0]['WD_warwick_smaller']
-SELECTION_PARA = [1.4,0.10,2,22,8,300]
+SELECTION_PARA = [1.4, 0.10, 2, 22, 8, 300]
 WD_warwick_smaller = np.load('/datascope/menard/group/scheng/Gaia/WD_warwick_smaller.npy')[0]['WD_warwick_smaller']
 _, WD_warwick_smaller = WD_MCMC_func.select_WD(WD_warwick_smaller,SELECTION_PARA[0],SELECTION_PARA[1],SELECTION_PARA[2],
-                                               SELECTION_PARA[3],SELECTION_PARA[4],SELECTION_PARA[5]) # changed on Dec 18
-
-if WD_MCMC_func.Q_IS_MERGER==False:
+                                               SELECTION_PARA[3],SELECTION_PARA[4],SELECTION_PARA[5])
+if WD_MCMC_func.Q_IS_MERGER == False:
     WD_MCMC_func.n = 400
     WD_MCMC_func.n_tc = 8000
 
 
 # Select the WDs Suitable for MCMC
 ##------------------------------------------------------------------------------------------------------------------------
-mass_min = 1.08#1.07#1.09
-mass_max = 1.23#1.22#1.27
-distance1 = 0
-distance2 = int(sys.argv[1])
-spec_type = 'H'
-model = 'ONe'
-WD_model = WD_models.load_model('f', 'f', model, spec_type)
-age_lim = 3.5
-spec_type = 'DA_thick'
-WD_warwick_smaller['mass'] = WD_warwick_smaller['mass_' + spec_type + '_' + model]
-WD_warwick_smaller['age'] = WD_warwick_smaller['age_' + spec_type + '_' + model]
-Q_branch = np.array((WD_warwick_smaller['mass'] > mass_min) * (WD_warwick_smaller['mass'] < mass_max) *
-           (1/WD_warwick_smaller['parallax']*1000 > distance1) * (1/WD_warwick_smaller['parallax']*1000 < distance2) *
-           WD_HR.func_select(WD_warwick_smaller['bp_rp'], WD_warwick_smaller['G'], 13.20, 1.2, 0.20, -0.40, 0.10) )
-WD = WD_warwick_smaller[np.array((WD_warwick_smaller['mass'] > mass_min) * (WD_warwick_smaller['mass'] < mass_max) *
-         (1/WD_warwick_smaller['parallax']*1000 > distance1) * (1/WD_warwick_smaller['parallax']*1000 < distance2) *
-         ~Q_branch )]
-WD_Q = WD_warwick_smaller[Q_branch]
+mass_min    = 1.08#1.07#1.09
+mass_max    = 1.23#1.22#1.27
+distance1   = 0
+distance2   = int(sys.argv[1])
+atm_type    = 'H'
+model       = 'ONe'
+# WD_model    = WD_models.load_model('f', 'f', model, atm_type)
+age_lim     = 3.5
+WD_warwick_smaller['mass']  = WD_warwick_smaller['mass_' + atm_type + '_' + model]
+WD_warwick_smaller['age']   = WD_warwick_smaller['age_' + atm_type + '_' + model]
+Q_branch    = np.array((WD_warwick_smaller['mass'] > mass_min) *
+                       (WD_warwick_smaller['mass'] < mass_max) *
+                       (1/WD_warwick_smaller['parallax']*1000 > distance1) *
+                       (1/WD_warwick_smaller['parallax']*1000 < distance2) *
+                       WD_HR.func_select(WD_warwick_smaller['bp_rp'],
+                                         WD_warwick_smaller['G'],
+                                         13.20, 1.2, 0.20, -0.40, 0.10)
+WD      = WD_warwick_smaller[np.array((WD_warwick_smaller['mass'] > mass_min) *
+                                      (WD_warwick_smaller['mass'] < mass_max) *
+                                      (1/WD_warwick_smaller['parallax']*1000 > distance1) *
+                                      (1/WD_warwick_smaller['parallax']*1000 < distance2) *
+                                      ~Q_branch )]
+WD_Q    = WD_warwick_smaller[Q_branch]
 
 print('length of WD: ',len(WD), 'length of WD_Q: ',len(WD_Q))
 
@@ -147,13 +148,15 @@ def parallel(i):
     # "power index", "v10", "v_T",
     # "index_z","v10_z",
     # "sy/sx",
-    #"v0","v0_z","v_T_z",
-    #"sy/sx_T"
-    #UVW
-    #"fraction", "delay", "background"
+    # "v0","v0_z","v_T_z",
+    # "sy/sx_T"
+    # UVW
     #
+    # para_Q: "fraction", "delay", "background"
+    #         ""
     def sampling(width, center, N=1):
         return np.random.rand(N) * width * 2 + center - width
+                       
     p0 = [np.concatenate((
         sampling(0.1, 0.3), sampling(10, 30), sampling(10, 65),
         sampling(0.15, 0.5), sampling(10, 15),
@@ -182,18 +185,18 @@ if METHOD == 'Run_MCMC':
     para_v = np.empty((number * sampling_per_agent, Nv))
     para_Q = np.empty((number * sampling_per_agent, NQ))
     for i in range(number):
-        para_v[(i*sampling_per_agent):((i+1)*sampling_per_agent)] = result[i][:,:Nv]
-        para_Q[(i*sampling_per_agent):((i+1)*sampling_per_agent)] = result[i][:,Nv:Nv+NQ]
+        para_v[(i*sampling_per_agent):((i+1)*sampling_per_agent)] = result[i][:, :Nv]
+        para_Q[(i*sampling_per_agent):((i+1)*sampling_per_agent)] = result[i][:, Nv:Nv+NQ]
     para_v = para_v.reshape(agents, nwalkers, then_run//gap, Nv)\
                 .transpose((2, 1, 0, 3)).reshape(number * sampling_per_agent, Nv)
     para_Q = para_Q.reshape(agents, nwalkers, then_run//gap, NQ)\
                 .transpose((2, 1, 0, 3)).reshape(number * sampling_per_agent, NQ)
     #---------------------------------------------------------------------------------------------------------------------------
-    para_input = np.median(np.concatenate((para_v, para_Q), axis=1)[-50000:,:], axis=0)
+    para_input = np.median(np.concatenate((para_v, para_Q), axis=1)[-50000:, :], axis=0)
     
-    x_list = ['np.arange(0,15,0.2)', 'np.arange(0,0.45,0.01)', 'np.arange(0,0.45,0.01)']
+    x_list = ['np.arange(0, 15, 0.2)', 'np.arange(0, 0.45, 0.01)', 'np.arange(0, 0.45, 0.01)']
     PDF_test_name = ['delay_test', 'mfraction', 'Qfraction']
-    changed_para = [Nv+1, Nv+5 , Nv+0]
+    changed_para = [Nv + 1, Nv + 5 , Nv + 0]
     for PDF_test_index in range(3):
         pdf_sim     = np.empty_like(eval(x_list[PDF_test_index]))
         pdf_Q_sim   = np.empty_like(eval(x_list[PDF_test_index]))
@@ -210,7 +213,7 @@ if METHOD == 'Run_MCMC':
             pdf_e_sim[i]    = temp1[~np.isnan(temp1)].sum()
             pdf_l_sim[i]    = temp2[~np.isnan(temp2)].sum()
             pdf_Q_sim[i]    = temp[~np.isnan(temp)].sum()
-        exec( PDF_test_name[PDF_test_index]+'= [pdf_sim, pdf_e_sim, pdf_l_sim, pdf_Q_sim ]')
+        exec( PDF_test_name[PDF_test_index] + '= [pdf_sim, pdf_e_sim, pdf_l_sim, pdf_Q_sim ]')
 
     #---------------------------------------------------------------------------------------------------------------------------
     if Q_IS_MERGER == True:
@@ -221,7 +224,7 @@ if METHOD == 'Run_MCMC':
     np.save('/datascope/menard/group/scheng/Gaia/WD_vel_age_MCMC_Feb12/MCMC_power_' +
             sys.argv[8] + '_' + sys.argv[9] + '_' +
             str(mass_min) + '_' + str(distance2) + '_' + str(age_lim) + '_' +
-            spec_type + '_' + model + '_' + str(end_of_SF) + '_T' +
+            atm_type + '_' + model + '_' + str(end_of_SF) + '_T' +
             str(age_T) + '_' + sys.argv[4] + sys.argv[5] + sys.argv[6] + test_number + suffix,
             np.array([{'para_Q':para_Q, 'para_v':para_v,
                        'delay_test':delay_test, 'mfraction':mfraction, 'Qfraction':Qfraction,
