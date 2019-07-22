@@ -1,12 +1,9 @@
-import sys
-
 import emcee
 import matplotlib.pyplot as plt
-from multiprocessing import Pool
 import numpy as np
 from scipy.interpolate import interp1d
 
-from astropy.coordinates import SkyCoord  # High-level coordinates
+from astropy.coordinates import SkyCoord # High-level coordinates
 from astropy.coordinates import ICRS, Galactic # Low-level frames
 from astropy.io import ascii
 from astropy.table import Table
