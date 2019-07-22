@@ -5,8 +5,6 @@ import matplotlib.pyplot as plt
 from multiprocessing import Pool
 import numpy as np
 
-from astropy.coordinates import SkyCoord  # High-level coordinates
-from astropy.coordinates import ICRS, Galactic # Low-level frames
 from astropy.io import ascii
 from astropy.table import Table
 import astropy.units as u
@@ -45,7 +43,7 @@ if sys.argv[7] == 'F':
 WD_MCMC_func.DELAY_INDEX = -float(sys.argv[8])    
 WD_MCMC_func.DELAY_CUT = float(sys.argv[9])
 
-if len(sys.argv)>10:
+if len(sys.argv) > 10:
     DELAY = int(sys.argv[10])
 
 ##--------------------------------------------------------------------------------------------------
@@ -74,17 +72,16 @@ if WD_MCMC_func.Q_IS_MERGER == False:
 
 # Select the WDs Suitable for MCMC
 ##------------------------------------------------------------------------------------------------------------------------
-mass_min    = 1.08#1.07#1.09
-mass_max    = 1.23#1.22#1.27
+mass_min    = 1.08#1.10
+mass_max    = 1.23#1.28
 distance1   = 0
 distance2   = int(sys.argv[1])
-spec_type   = 'H'
+atm_type    = 'H'
 model       = 'ONe'
-# WD_model    = WD_models.load_model('f', 'f', model, spec_type)
+# WD_model    = WD_models.load_model('f', 'f', model, atm_type)
 age_lim     = 3.5
-spec_type   = 'DA_thick'
-WD_warwick_smaller['mass']  = WD_warwick_smaller['mass_' + spec_type + '_' + model]
-WD_warwick_smaller['age']   = WD_warwick_smaller['age_' + spec_type + '_' + model]
+WD_warwick_smaller['mass']  = WD_warwick_smaller['mass_' + atm_type + '_' + model]
+WD_warwick_smaller['age']   = WD_warwick_smaller['age_' + atm_type + '_' + model]
 Q_branch    = np.array((WD_warwick_smaller['mass'] > mass_min) *
                        (WD_warwick_smaller['mass'] < mass_max) *
                        (1/WD_warwick_smaller['parallax']*1000 > distance1) *
@@ -146,14 +143,13 @@ def parallel(i):
                                           NOT_FIT_UVW, NOT_FIT_INDEX, FIXV])
     a_random_number = np.random.randint(0,100000)
     np.random.seed(i+a_random_number)
-    # "power index", "v10", "v_T",
-    # "index_z","v10_z",
+    # "power index", "v4", "v_T",
+    # "index_z","v4_z",
     # "sy/sx",
-    #"v0","v0_z","v_T_z",
-    #"sy/sx_T"
-    #UVW
-    #"fraction", "delay", "background"
-    #
+    # "v0","v0_z","v_T_z",
+    # "sy/sx_T"
+    # UVW
+    # "fraction", "delay", "background", "?SFR_step?", "no use", "merger fraction", "no use"
     def sampling(width, center, N=1):
         return np.random.rand(N) * width * 2 + center - width
                        
@@ -224,7 +220,7 @@ if METHOD == 'Run_MCMC':
     np.save('/datascope/menard/group/scheng/Gaia/WD_vel_age_MCMC_Feb12/MCMC_power_' +
             sys.argv[8] + '_' + sys.argv[9] + '_' +
             str(mass_min) + '_' + str(distance2) + '_' + str(age_lim) + '_' +
-            spec_type + '_' + model + '_' + str(end_of_SF) + '_T' +
+            atm_type + '_' + model + '_' + str(end_of_SF) + '_T' +
             str(age_T) + '_' + sys.argv[4] + sys.argv[5] + sys.argv[6] + test_number + suffix,
             np.array([{'para_Q':para_Q, 'para_v':para_v,
                        'delay_test':delay_test, 'mfraction':mfraction, 'Qfraction':Qfraction,
