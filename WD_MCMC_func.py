@@ -59,7 +59,7 @@ def select_WD(WD_table, bprp_excess=1.4, bprp_error=0.10, ev=2, G=22.5, d_ed=8,
         total_age, WD_mass = para_of_WD(selected_table, atm_type, model) 
         selected_table['age_'+atm_type+'_'+model] = total_age
         selected_table['mass_'+atm_type+'_'+model] = WD_mass
-    print('the length of table after selection is: ' + selected.sum())
+    print('the length of table after selection is: ' + str(selected.sum()))
     return selected, selected_table
 
 #------------------------------------------------------------------------------
