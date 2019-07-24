@@ -161,7 +161,7 @@ def parallel(i):
         sampling(0.1, 0.63),
         np.array([7, 5, 5]) + np.random.rand(3) * np.array([5, 5, 5]),
         np.array([0.02, 8, 0]) + np.random.rand(3) * np.array([0.15, 4, 0.01]),
-        np.array([-1, 77, 0.15, 5])+np.random.rand(4)*np.array([0.3, 5, 0.15, 5]) ))
+        np.array([-75, -75, 0.15, -75])+np.random.rand(4)*np.array([150, 150, 0.15, 150]) ))
           for j in range(nwalkers)]
     pos, _, _ = sampler.run_mcmc(p0, burning)
     sampler.reset()
