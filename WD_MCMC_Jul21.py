@@ -60,7 +60,6 @@ ndim, nwalkers = Nv + NQ, 50
 
 # Load WD table
 ##------------------------------------------------------------------------------------------------------------------------
-#WD_warwick_smaller = np.load('/datascope/menard/group/scheng/Gaia/WD_warwick_smaller.npy')[0]['WD_warwick_smaller']
 SELECTION_PARA = [1.4, 0.10, 2, 22, 8, 300]
 WD_warwick_smaller = np.load('/datascope/menard/group/scheng/Gaia/WD_warwick_smaller.npy')[0]['WD_warwick_smaller']
 _, WD_warwick_smaller = WD_MCMC_func.select_WD(WD_warwick_smaller,SELECTION_PARA[0],SELECTION_PARA[1],SELECTION_PARA[2],
@@ -135,6 +134,13 @@ vB_Q        = vB_Q[selection_Q]
 pml_Q       = pml_Q[selection_Q]
 pmb_Q       = pmb_Q[selection_Q]
 factor_Q    = factor_Q[selection_Q]
+
+early       = np.array(1.22 - (age - 0.6) * 0.2 > mass) #for ONe: 1.22; CO: 1.25
+late        = np.array(1.22 - (age - 0.6) * 0.2 < mass)
+
+print('length of WD: ', selection.sum() + selection_Q.sum(), 
+      ' early: ', early.sum(), ' Q: ', selection_Q.sum(), ' late: ', late.sum())
+
 
 ##--------------------------------------------------------------------------------------------------
 def parallel(i):
