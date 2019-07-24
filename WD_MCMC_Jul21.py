@@ -89,6 +89,7 @@ Q_branch    = np.array((WD_warwick_smaller['mass'] > mass_min) *
                        WD_HR.func_select(WD_warwick_smaller['bp_rp'],
                                          WD_warwick_smaller['G'],
                                          13.20, 1.2, 0.20, -0.40, 0.10)
+                      )
 WD      = WD_warwick_smaller[np.array((WD_warwick_smaller['mass'] > mass_min) *
                                       (WD_warwick_smaller['mass'] < mass_max) *
                                       (1/WD_warwick_smaller['parallax']*1000 > distance1) *
