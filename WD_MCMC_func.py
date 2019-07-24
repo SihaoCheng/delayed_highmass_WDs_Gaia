@@ -192,6 +192,9 @@ def velocity_density_3D_check(l, b, vL, vB, age, para_v, is_vL):
     else:
         return p_vB 
 
+#------------------------------------------------------------------------------
+# the main function for calculating likelihood
+#------------------------------------------------------------------------------
 
 def ln_likelihood_pheno(para,
                         mass, age, pml, pmb, factor, l, b,
@@ -213,9 +216,9 @@ def ln_likelihood_pheno(para,
         U   = para_v[10]
         V   = para_v[11]
         W   = para_v[12]
-        U_Q = 11#para_v[10]#para[Nv+3]
-        V_Q = 7.5#para_v[11]#para_Q[4]
-        W_Q = 7#para_v[12]#para_Q[6]
+        U_Q = para_Q[3]#11#para_v[10]#
+        V_Q = para_Q[4]#7.5#para_v[11]#
+        W_Q = para_Q[6]#7#para_v[12]#
     if not_fit_index == True:
         para_v[0] = 0.38
         para_v[3] = 0.5
@@ -564,8 +567,8 @@ def ln_prob(para,
          within(para_v[9], 0, 1) *
          within(para_v[10], -5, 20) * within(para_v[11], -5, 20) * within(para_v[12], -5, 20) *
          within(para_Q[0], 0, 0.35) * within(para_Q[1], 0, delay_lim) * within(para_Q[2], 0, 0.05) *
-         within(para_Q[3], -2, -0.1) * within(para_Q[4], 70, 90) * within(para_Q[5], 0, 0.5) *
-         within(para_Q[6], -5, 20)):
+         within(para_Q[3], -100, 100) * within(para_Q[4], -100, 100) * within(para_Q[5], 0, 0.5) *
+         within(para_Q[6], -100, 100)):
         return -np.inf
     else:
         density, _, _, _ = ln_likelihood_pheno(
@@ -575,8 +578,13 @@ def ln_prob(para,
             False, not_fit_UVW=not_fit_UVW, not_fit_index=not_fit_index, fixv=fixv
         )
         return density
-    
-    
+
+
+#------------------------------------------------------------------------------
+# the main function for calculating likelihood (only with merger component)
+#------------------------------------------------------------------------------
+
+
 def ln_likelihood_pheno_merger_rate(
     para,
     mass, age, pml, pmb, factor, l, b, mass_Q, age_Q, pml_Q, pmb_Q, factor_Q, l_Q, b_Q,
