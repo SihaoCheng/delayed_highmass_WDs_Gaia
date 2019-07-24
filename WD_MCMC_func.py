@@ -138,7 +138,7 @@ def LBR_XYZ(l, b, L, B, sx, sy, sz):
                   [np.cos(l_rad), -np.sin(b_rad)*np.sin(l_rad), np.cos(b_rad)*np.sin(l_rad)],
                   [0, np.cos(b_rad), np.sin(b_rad)]])
     #print(A.shape, Sigma.shape, sx.shape)
-    Sigma_lbr   = m3(m3(A.T, Sigma), M)
+    Sigma_lbr   = m3(m3(M.T, Sigma), M)
     Sigma_lb    = Sigma_lbr[:2,:2]
     S00         = Sigma_lb[0,0]
     S11         = Sigma_lb[1,1]
