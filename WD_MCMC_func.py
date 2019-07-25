@@ -497,10 +497,15 @@ def ln_likelihood_pheno(para,
             age_Q.reshape(-1,1) + np.linspace(0,1,n_Q_delay).reshape(1, -1) * para_Q[1],
             para_v[0], para_v[1], para_v[2], para_v[6]
         )**2 / stromberg_k
+#         vL_Q_Qdelayed, vB_Q_Qdelayed    = get_v_delayed_3D(
+#             0, l_Q.reshape(-1, 1), b_Q.reshape(-1, 1),
+#             pml_Q.reshape(-1, 1), pmb_Q.reshape(-1, 1), factor_Q.reshape(-1,1),
+#             v_drift_Q_Qdelayed, U_Q, V_Q, W_Q
+#         )
         vL_Q_Qdelayed, vB_Q_Qdelayed    = get_v_delayed_3D(
             0, l_Q.reshape(-1, 1), b_Q.reshape(-1, 1),
             pml_Q.reshape(-1, 1), pmb_Q.reshape(-1, 1), factor_Q.reshape(-1,1),
-            v_drift_Q_Qdelayed, U_Q, V_Q, W_Q
+            0, U_Q, V_Q, W_Q
         ) 
         too_late = age_Q.reshape(-1, 1) + np.linspace(0, 1, n_Q_delay).reshape(1, -1) * para_Q[1] > end_of_SF
         p_s = velocity_density_3D_func(
