@@ -528,11 +528,11 @@ def ln_likelihood_pheno(para,
             )
         ).mean(1) * para_Q[5]
         p_bg = 1/400/background_pdf_factor * para_Q[2]
-#         pdf_norm = (1 - para_Q[0] - para_Q[5]) +
-#             fQ * (~too_late).mean(1) * (para_Q[1] + t_gap_eff) / t_gap_eff +
+#         pdf_norm = (1 - para_Q[0] - para_Q[5]) + \
+#             fQ * (~too_late).mean(1) * (para_Q[1] + t_gap_eff) / t_gap_eff + \
 #             para_Q[5] * tc_weight_merger(age_Q)
-        pdf_norm = (1 - para_Q[0] - para_Q[5]) +
-            fQ * (para_Q[1] + t_gap_eff) / t_gap_eff +
+        pdf_norm = (1 - para_Q[0] - para_Q[5]) + \
+            fQ * (para_Q[1] + t_gap_eff) / t_gap_eff + \
             para_Q[5] * tc_weight_merger(age_Q)
         density_array_Q = np.log(p_s + p_e + p_m + p_bg) - np.log(pdf_norm)
         
