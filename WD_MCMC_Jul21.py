@@ -112,7 +112,7 @@ vL_Q, vB_Q              = np.array(WD_MCMC_func.get_v_delayed_3D(WD_Q['age'], WD
                                                                  11, 7.5, 7))
 
 selection   = np.array((WD['age'] < age_lim) * (WD['age'] > 0.1) * 
-                       ((vL**2 + vB**2)**0.5 < 200))
+                       ((vL**2 + vB**2)**0.5 < 300))
 mass        = np.array(WD['mass'][selection])
 age         = np.array(WD['age'][selection])
 l           = np.array(WD['l'][selection])
@@ -124,7 +124,7 @@ pmb         = pmb[selection]
 factor      = factor[selection]
 
 selection_Q = np.array((WD_Q['age'] < age_lim) * (WD_Q['age'] > 0.1) * 
-                       ((vL_Q**2 + vB_Q**2)**0.5 < 200))
+                       ((vL_Q**2 + vB_Q**2)**0.5 < 300))
 mass_Q      = np.array(WD_Q['mass'][selection_Q])
 age_Q       = np.array(WD_Q['age'][selection_Q])
 l_Q         = np.array(WD_Q['l'][selection_Q])
