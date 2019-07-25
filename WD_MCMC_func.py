@@ -302,7 +302,7 @@ def ln_likelihood_pheno(para,
         background_pdf_factor       = 1    
     else:
         velocity_density_3D_func    = velocity_density_3D
-        background_pdf_factor       = 400
+        background_pdf_factor       = 700
     ## pdf of v,tc =
         ## [pdf(v) for ordinary * uniform(tc)] * ordinary fraction +
         ## [pdf(v) for merger * merger fraction(t0)
