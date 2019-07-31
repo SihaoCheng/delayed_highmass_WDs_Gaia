@@ -566,7 +566,7 @@ def ln_prob(para,
     para_v = para[0:Nv].copy()
     para_Q = para[Nv:Nv+NQ].copy()
     def within(x, lower_lim, upper_lim):
-        return (x > lower_lim) * (x < upper_lim)
+        return (x >= lower_lim) * (x <= upper_lim)
     
     if ~(within(para_v[0], 0, 1) * within(para_v[1], 0, 50) * within(para_v[2], 40, 90) *
          within(para_v[3], 0, 1) * within(para_v[4], 0, 50) *
