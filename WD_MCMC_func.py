@@ -238,7 +238,8 @@ def ln_likelihood_pheno(para,
     if test_number == 'noQmerger':
         para_Q[0] = 0
         para_Q[5] = 0
-    
+    para_Q[2] = 0
+
     early   = np.array(1.22 - (age - 0.6) * 0.2 > mass) #for ONe: 1.22; CO: 1.25
     late    = np.array(1.22 - (age - 0.6) * 0.2 < mass)    
     
@@ -311,144 +312,126 @@ def ln_likelihood_pheno(para,
     ## early
     if Q_IS_MERGER == True:
         n_Q_delay = 20
-        density_array_early = np.log(
+        p_s = velocity_density_3D_func(
+            l[early], b[early], vL[early], vB[early], age[early], 
+            para_v, is_vL
+        ) * (1 - para_Q[0] - para_Q[2] - para_Q[5])
+        p_em = (
             velocity_density_3D_func(
-                l[early], b[early], vL[early], vB[early], age[early], 
+                l[early].reshape(-1, 1), b[early].reshape(-1, 1), 
+                vL_delayed[early], vB_delayed[early], t0.reshape(1, -1), 
                 para_v, is_vL
-            ) * (1 - para_Q[0] - para_Q[2] - para_Q[5])
+            ) * pdf_tct0(
+                age[early].reshape(-1, 1), t0.reshape(1,-1), None,
+                normalization_factor_Q, SFR, delay_cut, delay_index
+            ) * para_Q[0]
             +
-            (
-                velocity_density_3D_func(
-                    l[early].reshape(-1, 1), b[early].reshape(-1, 1), 
-                    vL_delayed[early], vB_delayed[early], t0.reshape(1, -1), 
-                    para_v, is_vL
-                ) * pdf_tct0(
-                    age[early].reshape(-1, 1), t0.reshape(1,-1), None,
-                    normalization_factor_Q, SFR, delay_cut, delay_index
-                ) * para_Q[0]
-                +
-                velocity_density_3D_func(
-                    l[early].reshape(-1, 1),b[early].reshape(-1, 1),
-                    vL_delayed[early], vB_delayed[early], t0.reshape(1, -1),
-                    para_v, is_vL
-                ) * pdf_tct0(
-                    age[early].reshape(-1, 1), t0.reshape(1,-1), para_Q[3:],
-                    normalization_factor_Q_merger, SFR_merger,
-                    delay_cut, delay_index
-                ) * para_Q[5]
-            ).mean(1)
-            +
-            1/400/background_pdf_factor*1 * para_Q[2]
-        ) - np.log( 
-            (1 - para_Q[0] - para_Q[5]) + 
-            para_Q[0] * tc_weight(age[early]) + 
+            velocity_density_3D_func(
+                l[early].reshape(-1, 1),b[early].reshape(-1, 1),
+                vL_delayed[early], vB_delayed[early], t0.reshape(1, -1),
+                para_v, is_vL
+            ) * pdf_tct0(
+                age[early].reshape(-1, 1), t0.reshape(1,-1), para_Q[3:],
+                normalization_factor_Q_merger, SFR_merger,
+                delay_cut, delay_index
+            ) * para_Q[5]
+        ).mean(1)
+        p_bg = 1/400/background_pdf_factor*1 * para_Q[2]
+        pdf_norm = (1 - para_Q[0] - para_Q[5]) + \
+            para_Q[0] * tc_weight(age[early]) + \
             para_Q[5] * tc_weight_merger(age[early])
-        )
+        density_array_early = np.log(p_s + p_em + p_bg) - np.log(pdf_norm)
         
         ## late
-        density_array_late = np.log(
+        p_s = velocity_density_3D_func(
+            l[late], b[late], vL[late], vB[late], age[late], 
+            para_v, is_vL
+        ) * (1 - para_Q[0] - para_Q[2] - para_Q[5])
+        p_em = (
             velocity_density_3D_func(
-                l[late], b[late], vL[late], vB[late], age[late], 
+                l[late].reshape(-1, 1), b[late].reshape(-1, 1),
+                vL_delayed[late], vB_delayed[late], t0.reshape(1,-1),
                 para_v, is_vL
-            ) * (1 - para_Q[0] - para_Q[2] - para_Q[5])
+            ) * pdf_tct0(
+                age[late].reshape(-1, 1) + para_Q[1], t0.reshape(1,-1), None,
+                normalization_factor_Q, SFR, delay_cut, delay_index
+            ) * para_Q[0]
             +
-            (
-                velocity_density_3D_func(
-                    l[late].reshape(-1, 1), b[late].reshape(-1, 1),
-                    vL_delayed[late], vB_delayed[late], t0.reshape(1,-1),
-                    para_v, is_vL
-                ) * pdf_tct0(
-                    age[late].reshape(-1, 1) + para_Q[1], t0.reshape(1,-1), None,
-                    normalization_factor_Q, SFR, delay_cut, delay_index
-                ) * para_Q[0]
-                +
-                velocity_density_3D_func(
-                    l[late].reshape(-1, 1), b[late].reshape(-1,1),
-                    vL_delayed[late], vB_delayed[late], t0.reshape(1, -1),
-                    para_v, is_vL
-                ) * pdf_tct0(
-                    age[late].reshape(-1, 1), t0.reshape(1,-1), None,
-                    normalization_factor_Q_merger, SFR_merger,
-                    delay_cut, delay_index
-                ) * para_Q[5]
-            ).mean(1)
-            +
-            1/400/background_pdf_factor * para_Q[2]
-        ) - np.log(
-            (1 - para_Q[0] - para_Q[5]) + 
-            para_Q[0] * tc_weight(age[late] + para_Q[1]) +
+            velocity_density_3D_func(
+                l[late].reshape(-1, 1), b[late].reshape(-1,1),
+                vL_delayed[late], vB_delayed[late], t0.reshape(1, -1),
+                para_v, is_vL
+            ) * pdf_tct0(
+                age[late].reshape(-1, 1), t0.reshape(1,-1), None,
+                normalization_factor_Q_merger, SFR_merger,
+                delay_cut, delay_index
+            ) * para_Q[5]
+        ).mean(1)
+        p_bg = 1/400/background_pdf_factor * para_Q[2]
+        pdf_norm = (1 - para_Q[0] - para_Q[5]) + \
+            para_Q[0] * tc_weight(age[late] + para_Q[1]) + \
             para_Q[5] * tc_weight_merger(age[late])
-        )
+        density_array_late = np.log(p_s + p_em + p_bg) - np.log(pdf_norm)
         # 0: index of WD (tc) ,  1: t0,  2: delay on branch 
         ## Q
         a1, a2 = vL_Q_delayed.shape
-        density_array_Q = np.log(
+        p_s = velocity_density_3D_func(
+            l_Q, b_Q, vL_Q, vB_Q, age_Q, para_v, is_vL
+        ) * (1 - para_Q[0] - para_Q[2] - para_Q[5])
+        p_e = (
             velocity_density_3D_func(
-                l_Q, b_Q, vL_Q, vB_Q, age_Q, para_v, is_vL
-            ) * (1 - para_Q[0] - para_Q[2] - para_Q[5])
-            +
-            (
-                velocity_density_3D_func(
-                    l_Q.reshape(-1, 1), b_Q.reshape(-1, 1),
-                    vL_Q_delayed, vB_Q_delayed, t0.reshape(1, -1),
-                    para_v, is_vL
-                ).reshape(a1, a2, 1) * pdf_tct0(
-                    age_Q.reshape(-1,1,1) + 
-                    np.linspace(0, 1, n_Q_delay).reshape(1,1,-1) * para_Q[1],
-                    t0.reshape(1,-1,1), None,
-                    normalization_factor_Q, SFR, delay_cut, delay_index
-                )
-            ).mean((1,2)) * (para_Q[1] + t_gap_eff) / t_gap_eff * para_Q[0]
-            +
-            (
-                velocity_density_3D_func(
-                    l_Q.reshape(-1, 1),b_Q.reshape(-1, 1),
-                    vL_Q_delayed, vB_Q_delayed, t0.reshape(1, -1), para_v, is_vL
-                ) * pdf_tct0(
-                    age_Q.reshape(-1, 1), t0.reshape(1,-1), None,
-                    normalization_factor_Q_merger, SFR_merger,
-                    delay_cut, delay_index
-                )
-            ).mean(1) * para_Q[5]
-            +
-            1/400/background_pdf_factor * para_Q[2]
-        ) - np.log(
-            (1 - para_Q[0] - para_Q[5])
-            + 
+                l_Q.reshape(-1, 1), b_Q.reshape(-1, 1),
+                vL_Q_delayed, vB_Q_delayed, t0.reshape(1, -1),
+                para_v, is_vL
+            ).reshape(a1, a2, 1) * pdf_tct0(
+                age_Q.reshape(-1,1,1) + 
+                np.linspace(0, 1, n_Q_delay).reshape(1,1,-1) * para_Q[1],
+                t0.reshape(1,-1,1), None,
+                normalization_factor_Q, SFR, delay_cut, delay_index
+            )
+        ).mean((1,2)) * (para_Q[1] + t_gap_eff) / t_gap_eff * para_Q[0]
+        p_m = (
+            velocity_density_3D_func(
+                l_Q.reshape(-1, 1),b_Q.reshape(-1, 1),
+                vL_Q_delayed, vB_Q_delayed, t0.reshape(1, -1), para_v, is_vL
+            ) * pdf_tct0(
+                age_Q.reshape(-1, 1), t0.reshape(1,-1), None,
+                normalization_factor_Q_merger, SFR_merger,
+                delay_cut, delay_index
+            )
+        ).mean(1) * para_Q[5]
+        p_bg = 1/400/background_pdf_factor * para_Q[2]
+        pdf_norm = (1 - para_Q[0] - para_Q[5]) + \
             para_Q[0] * tc_weight(
                 age_Q.reshape(-1, 1) + 
                 np.linspace(0, 1, n_Q_delay).reshape(1, -1) * para_Q[1]
-            ).mean(1) * (para_Q[1] + t_gap_eff) / t_gap_eff
-            +
+            ).mean(1) * (para_Q[1] + t_gap_eff) / t_gap_eff + \
             para_Q[5] * tc_weight_merger(age_Q)
         )
+        density_array_Q = np.log(p_s + p_e + p_m + p_bg) - np.log(pdf_norm)
         
     if Q_IS_MERGER == False:
         ## early
         fQ = para_Q[0]
-        density_array_early = np.log(
+        p_se = velocity_density_3D_func(
+            l[early], b[early], vL[early], vB[early], age[early],
+            para_v, is_vL
+        ) * (1 - para_Q[2] - para_Q[5] - para_Q[0] + fQ)
+        p_m = (
             velocity_density_3D_func(
-                l[early], b[early], vL[early], vB[early], age[early],
+                l[early].reshape(-1, 1),b[early].reshape(-1, 1),
+                vL_delayed[early], vB_delayed[early], t0.reshape(1,-1),
                 para_v, is_vL
-            ) * (1 - para_Q[2] - para_Q[5] - para_Q[0] + fQ)
-            +
-            (
-                velocity_density_3D_func(
-                    l[early].reshape(-1, 1),b[early].reshape(-1, 1),
-                    vL_delayed[early], vB_delayed[early], t0.reshape(1,-1),
-                    para_v, is_vL
-                ) * pdf_tct0(
-                    age[early].reshape(-1, 1), t0.reshape(1,-1), None,
-                    normalization_factor_Q_merger, SFR_merger,
-                    delay_cut, delay_index
-                ) * para_Q[5]
-            ).mean(1)
-            +
-            1/400/background_pdf_factor * para_Q[2]
-        ) - np.log(
-            (1 - para_Q[5] - para_Q[0]) + fQ + 
-            para_Q[5] * tc_weight_merger(age[early])
-        )
+            ) * pdf_tct0(
+                age[early].reshape(-1, 1), t0.reshape(1,-1), None,
+                normalization_factor_Q_merger, SFR_merger,
+                delay_cut, delay_index
+            ) * para_Q[5]
+        ).mean(1)
+        p_bg = 1/400/background_pdf_factor * para_Q[2]
+        pdf_norm = (1 - para_Q[5] - para_Q[0]) + fQ + \
+            para_Q[5] * tc_weight_merger(age[early]))
+        density_array_early = np.log(p_se + p_m + p_bg) - np.log(pdf_norm)
         
         ## late
         v_drift_late    = velocity_scatter_3D(
@@ -462,66 +445,61 @@ def ln_likelihood_pheno(para,
         vB_late     = vB_late[late]
         too_late    = age[late] + para_Q[1] > end_of_SF
         fQ_late     = fQ * (~too_late)
-        density_array_late = np.log(
+        p_s = velocity_density_3D_func(
+            l[late], b[late], vL[late], vB[late], age[late], para_v, is_vL
+        ) * (1 - para_Q[0] - para_Q[2] - para_Q[5])
+        p_e = velocity_density_3D_func(
+            l[late], b[late], vL_late, vB_late, age[late]+para_Q[1],
+            para_v, is_vL
+        ) * fQ_late
+        p_m = (
             velocity_density_3D_func(
-                l[late], b[late], vL[late], vB[late], age[late], para_v, is_vL
-            ) * (1 - para_Q[0] - para_Q[2] - para_Q[5])
-            +
-            velocity_density_3D_func(
-                l[late], b[late], vL_late, vB_late, age[late]+para_Q[1],
+                l[late].reshape(-1, 1),b[late].reshape(-1, 1),
+                vL_delayed[late], vB_delayed[late], t0.reshape(1, -1),
                 para_v, is_vL
-            ) * fQ_late
-            +
-            (
-                velocity_density_3D_func(
-                    l[late].reshape(-1, 1),b[late].reshape(-1, 1),
-                    vL_delayed[late], vB_delayed[late], t0.reshape(1, -1),
-                    para_v, is_vL
-                ) * pdf_tct0(
-                    age[late].reshape(-1, 1), t0.reshape(1, -1), None,
-                    normalization_factor_Q_merger, SFR_merger,
-                    delay_cut, delay_index
-                ) * para_Q[5]
-            ).mean(1)
-            +
-            1/400/background_pdf_factor * para_Q[2]
-        ) - np.log(
-            (1 - para_Q[5] - para_Q[0]) + fQ_late +
+            ) * pdf_tct0(
+                age[late].reshape(-1, 1), t0.reshape(1, -1), None,
+                normalization_factor_Q_merger, SFR_merger,
+                delay_cut, delay_index
+            ) * para_Q[5]
+        ).mean(1)
+        p_bg = 1/400/background_pdf_factor * para_Q[2]
+        pdf_norm = (1 - para_Q[5] - para_Q[0]) + fQ_late + \
             para_Q[5] * tc_weight_merger(age[late])
-        )
+        density_array_late = np.log(p_s + p_e + p_m + p_bg) - np.log(pdf_norm)
 
         # 0: index of WD (tc) ,  1: t0,  2: delay on branch 
         ## Q
-#         n_Q_delay = 200
-#         v_drift_Q_Qdelayed              = velocity_scatter_3D(
-#             age_Q.reshape(-1,1) + np.linspace(0,1,n_Q_delay).reshape(1, -1) * para_Q[1],
-#             para_v[0], para_v[1], para_v[2], para_v[6]
-#         )**2 / stromberg_k
-#         vL_Q_Qdelayed, vB_Q_Qdelayed    = get_v_delayed_3D(
-#             0, l_Q.reshape(-1, 1), b_Q.reshape(-1, 1),
-#             pml_Q.reshape(-1, 1), pmb_Q.reshape(-1, 1), factor_Q.reshape(-1,1),
-#             v_drift_Q_Qdelayed, U_Q, V_Q, W_Q
-#         )
+        n_Q_delay = 50
+        v_drift_Q_Qdelayed              = velocity_scatter_3D(
+            age_Q.reshape(-1,1) + np.linspace(0,1,n_Q_delay).reshape(1, -1) * para_Q[1],
+            para_v[0], para_v[1], para_v[2], para_v[6]
+        )**2 / stromberg_k
         vL_Q_Qdelayed, vB_Q_Qdelayed    = get_v_delayed_3D(
             0, l_Q.reshape(-1, 1), b_Q.reshape(-1, 1),
             pml_Q.reshape(-1, 1), pmb_Q.reshape(-1, 1), factor_Q.reshape(-1,1),
-            0, U_Q, V_Q, W_Q
-        ) 
-#         too_late = age_Q.reshape(-1, 1) + np.linspace(0, 1, n_Q_delay).reshape(1, -1) * para_Q[1] > end_of_SF
+            v_drift_Q_Qdelayed, U_Q, V_Q, W_Q
+        )
+#        vL_Q_Qdelayed, vB_Q_Qdelayed    = get_v_delayed_3D(
+#            0, l_Q.reshape(-1, 1), b_Q.reshape(-1, 1),
+#            pml_Q.reshape(-1, 1), pmb_Q.reshape(-1, 1), factor_Q.reshape(-1,1),
+#            0, U_Q, V_Q, W_Q
+#        ) 
+        too_late = age_Q.reshape(-1, 1) + np.linspace(0, 1, n_Q_delay).reshape(1, -1) * para_Q[1] > end_of_SF
         p_s = velocity_density_3D_func(
             l_Q, b_Q, vL_Q, vB_Q, age_Q, para_v, is_vL
         ) * (1 - para_Q[0] - para_Q[2] - para_Q[5])
-#         p_e = (
-#             velocity_density_3D_func(
-#                 l_Q.reshape(-1, 1), b_Q.reshape(-1, 1), vL_Q_Qdelayed, vB_Q_Qdelayed, 
-#                 age_Q.reshape(-1,1) + np.linspace(0, 1, n_Q_delay).reshape(1, -1) * para_Q[1],
-#                 para_v, is_vL
-#             ) * ~(too_late)
-#         ).mean(1) * (para_Q[1] + t_gap_eff) / t_gap_eff * fQ
-        p_e = velocity_density_3D_func(
-            l_Q, b_Q, vL_Q_Qdelayed.flatten(), vB_Q_Qdelayed.flatten(), 
-            10.5, para_v, is_vL
-        ) * (para_Q[1] + t_gap_eff) / t_gap_eff * fQ
+        p_e = (
+            velocity_density_3D_func(
+                l_Q.reshape(-1, 1), b_Q.reshape(-1, 1), vL_Q_Qdelayed, vB_Q_Qdelayed, 
+                age_Q.reshape(-1,1) + np.linspace(0, 1, n_Q_delay).reshape(1, -1) * para_Q[1],
+                para_v, is_vL
+            ) * ~(too_late)
+        ).mean(1) * (para_Q[1] + t_gap_eff) / t_gap_eff * fQ
+#        p_e = velocity_density_3D_func(
+#            l_Q, b_Q, vL_Q_Qdelayed.flatten(), vB_Q_Qdelayed.flatten(), 
+#            10.5, para_v, is_vL
+#        ) * (para_Q[1] + t_gap_eff) / t_gap_eff * fQ
         p_m = (
             velocity_density_3D_func(
                 l_Q.reshape(-1, 1),b_Q.reshape(-1, 1),
@@ -533,12 +511,12 @@ def ln_likelihood_pheno(para,
             )
         ).mean(1) * para_Q[5]
         p_bg = 1/400/background_pdf_factor * para_Q[2]
-#         pdf_norm = (1 - para_Q[0] - para_Q[5]) + \
-#             fQ * (~too_late).mean(1) * (para_Q[1] + t_gap_eff) / t_gap_eff + \
-#             para_Q[5] * tc_weight_merger(age_Q)
         pdf_norm = (1 - para_Q[0] - para_Q[5]) + \
-            fQ * (para_Q[1] + t_gap_eff) / t_gap_eff + \
+            fQ * (~too_late).mean(1) * (para_Q[1] + t_gap_eff) / t_gap_eff + \
             para_Q[5] * tc_weight_merger(age_Q)
+#        pdf_norm = (1 - para_Q[0] - para_Q[5]) + \
+#            fQ * (para_Q[1] + t_gap_eff) / t_gap_eff + \
+#            para_Q[5] * tc_weight_merger(age_Q)
         density_array_Q = np.log(p_s + p_e + p_m + p_bg) - np.log(pdf_norm)
         
     #density_array_Q = 0
@@ -635,7 +613,8 @@ def ln_likelihood_pheno_merger_rate(
     if test_number == 'noQmerger':
         para_Q[0] = 0
         para_Q[5] = 0
-    
+    para_Q[2] = 0
+
     early   = np.array(1.22 - (age - 0.6) * 0.2 > mass) #for ONe: 1.22; CO: 1.25
     late    = np.array(1.22 - (age - 0.6) * 0.2 < mass)    
     
@@ -760,3 +739,5 @@ def ln_prob_merger_rate(para,
             False, not_fit_UVW=not_fit_UVW, not_fit_index=not_fit_index, fixv=fixv
         )
         return density
+    
+    
