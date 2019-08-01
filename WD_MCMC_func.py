@@ -407,7 +407,6 @@ def ln_likelihood_pheno(para,
                 np.linspace(0, 1, n_Q_delay).reshape(1, -1) * para_Q[1]
             ).mean(1) * (para_Q[1] + t_gap_eff) / t_gap_eff + \
             para_Q[5] * tc_weight_merger(age_Q)
-        )
         density_array_Q = np.log(p_s + p_e + p_m + p_bg) - np.log(pdf_norm)
         
     if Q_IS_MERGER == False:
